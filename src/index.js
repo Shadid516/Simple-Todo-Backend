@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const todosRouter = require('./routes/todos');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; //uses env port or defaults to 3000 
 
 app.use(express.json());
 app.use('/api', todosRouter);
