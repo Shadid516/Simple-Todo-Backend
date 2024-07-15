@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { v4: uuidv4 } = require('uuid');
 
-let todos = []; // Temporary in-memory storage for todos, should later become per user.
+let todos = []; // Temporary in-memory storage for todos, should later become a per user encrypted store; Or an sql DB (easy option)
 
 /**
  * @route GET /api/todos
@@ -19,7 +20,7 @@ router.get('/todos', (req, res) => {
  */
 router.post('/todos', (req, res) => {
     const newTodo = {
-        id: todos.length + 1,
+        id: uuidv4(),
         task: req.body.task,
         completed: false
     };
@@ -35,8 +36,9 @@ router.post('/todos', (req, res) => {
 router.put('/todos/:id', (req, res) => {
     const { id } = req.params;
     const { task, completed } = req.body;
-    const todo = todos.find(t => t.id === parseInt(id));
+    const todo = todos.find(t => t.id === id); // Search for the UUID
     if (todo) {
+        //checks that handle if task are completed are undefined
         todo.task = task !== undefined ? task : todo.task;
         todo.completed = completed !== undefined ? completed : todo.completed;
         res.json(todo);
@@ -52,8 +54,8 @@ router.put('/todos/:id', (req, res) => {
  */
 router.delete('/todos/:id', (req, res) => {
     const { id } = req.params;
-    const index = todos.findIndex(t => t.id === parseInt(id));
-    if (index !== -1) {
+    const index = todos.findIndex(t => t.id === id); // Also search for the UUID
+    if (index !== -1) { //findIndex returns -1 if index not found so we use that feature for our response
         todos.splice(index, 1);
         res.status(204).end();
     } else {
