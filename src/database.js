@@ -8,6 +8,9 @@ db.serialize(() => {
         task TEXT NOT NULL,
         completed BOOLEAN NOT NULL
     )`);
+    db.run(`
+        ALTER TABLE todos ADD COLUMN created_at TEXT DEFAULT (datetime('now'));
+        `);
 });
 
 db.close();

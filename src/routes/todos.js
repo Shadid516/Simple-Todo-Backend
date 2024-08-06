@@ -9,6 +9,7 @@ const db = new sqlite3.Database('./app.db');
 // Middleware to handle JSON requests
 router.use(express.json());
 
+// Potential optimisation here: incorporate both checks in a single function 
 // Middleware to ensure content-type is application/json
 router.use((req, res, next) => {
     if (req.method === 'POST' || req.method === 'PUT') {
