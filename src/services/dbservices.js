@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const saltRounds = 10;
-const jwtSecret = 'your_jwt_secret'; // Replace with your actual secret
+const jwtSecret = process.env.JWT_SECRET; // Ensure JWT secret is loaded from environment variables
 
 // Function to register a new user
 function registerUser(username, password, callback) {
