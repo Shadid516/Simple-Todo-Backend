@@ -28,6 +28,7 @@ router.get('/todos', (req, res) => {
  */
 router.post('/todos', (req, res) => {
     const { task } = req.body;
+    console.log(task);
     createTodo(task, (err, result) => {
         if (err) {
             return res.status(500).json({ error: err.message });

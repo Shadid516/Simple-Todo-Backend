@@ -9,7 +9,6 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, jwtSecret, (err, user) => {
         if (err) {
-            console.log(err.name);
             return res.sendStatus(403);
         };
         req.user = user;
