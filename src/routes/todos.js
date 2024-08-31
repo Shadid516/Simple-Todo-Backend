@@ -1,28 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const { getAllTodos, createTodo, updateTodoById, deleteTodoById } = require('../services/dbservices');
-const authenticateToken = require('../services/authenticatetoken');
-
-// Middleware to ensure content-type is application/json and body is present
-router.use((req, res, next) => {
-    if ((req.method === 'POST' || req.method === 'PUT') && req.headers['content-type'] !== 'application/json') {
-        return res.status(400).json({ error: 'Content-Type must be application/json' });
-    }
-    if ((req.method === 'POST' || req.method === 'PUT') && !req.body) {
-        return res.status(400).json({ error: 'Request body is required' });
-    }
-    next();
-});
-
-
 
 /**
  * @route GET /api/todos
- * @desc Get all todos
+ * @desc Get all todos for the authenticated user
  * @access Protected
  */
 router.get('/todos', (req, res) => {
-    getAllTodos((err, rows) => {
+    // Extract user ID from the authenticated token
+    const userId = req.user.userId;
+
+    // Pass the user ID to getAllTodos to fetch todos for that user
+    getAllTodos(userId, (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -30,9 +20,10 @@ router.get('/todos', (req, res) => {
     });
 });
 
+
 /**
  * @route POST /api/todos
- * @desc Create a new todo
+ * @desc Create a new to do
  * @access Protected
  */
 router.post('/todos', (req, res) => {
@@ -47,7 +38,7 @@ router.post('/todos', (req, res) => {
 
 /**
  * @route PUT /api/todos/:id
- * @desc Update a todo by id
+ * @desc Update a to do by id
  * @access Protected
  */
 router.put('/todos/:id', (req, res) => {
@@ -67,7 +58,7 @@ router.put('/todos/:id', (req, res) => {
 
 /**
  * @route DELETE /api/todos/:id
- * @desc Delete a todo by id
+ * @desc Delete a to do by id
  * @access Protected
  */
 router.delete('/todos/:id', (req, res) => {

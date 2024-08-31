@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
-const jwtSecret = 'your_secret_key'; // Replace this with your actual secret key
+const jwtSecret = process.env.JWT_SECRET; // Ensure JWT secret is loaded from environment variables
 
-// Middleware to authenticate JWT
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // Extract token from Authorization header using optional chaining
+    const token = req.headers['authorization']?.split(' ')[1];
 
-    if (token == null) return res.sendStatus(401);
+    if (!token) return res.sendStatus(401);
 
     jwt.verify(token, jwtSecret, (err, user) => {
         if (err) return res.sendStatus(403);

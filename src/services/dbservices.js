@@ -49,10 +49,14 @@ function authenticateUser(username, password, callback) {
 }
 
 
+//function to get all todos by userId
+function getAllTodos(userId, callback) {
+    // Query to select todos for the specific user
+    const query = 'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at ASC';
 
-// Function to get all todos
-function getAllTodos(callback) {
-    db.all('SELECT * FROM todos ORDER BY created_at ASC', [], callback);
+    db.all(query, [userId], (err, rows) => {
+        callback(err, rows);
+    });
 }
 
 // Function to create a new to do
@@ -86,6 +90,5 @@ module.exports = {
     updateTodoById,
     deleteTodoById,
     registerUser,
-    authenticateUser,
-    authenticateToken
+    authenticateUser
 };
