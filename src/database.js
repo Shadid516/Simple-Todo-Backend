@@ -9,7 +9,9 @@ function createTables() {
             id TEXT PRIMARY KEY,
             task TEXT NOT NULL,
             completed BOOLEAN NOT NULL,
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at TEXT DEFAULT (datetime('now')),
+            user_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
         );
     `;
 

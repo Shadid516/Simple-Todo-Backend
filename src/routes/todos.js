@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const sqlite3 = require('sqlite3').verbose();
+const { getAllTodos, createTodo, updateTodoById, deleteTodoById } = require('../services/dbservices');
 
-// Connect to SQLite database
-const db = new sqlite3.Database('./app.db');
 
 // Middleware to handle JSON requests
 router.use(express.json());
@@ -28,13 +26,53 @@ router.use((req, res, next) => {
     next();
 });
 
+const authenticateToken = require('./authenticateToken');
+
+// Protect the /todos routes
+router.use('/todos', authenticateToken);
+
+
+/**
+ * @route POST /api/register
+ * @desc Register a new user
+ * @access Public
+ */
+router.post('/register', (req, res) => {
+    const { username, password } = req.body;
+
+    registerUser(username, password, (err, userId) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({ id: userId });
+    });
+});
+
+/**
+ * @route POST /api/login
+ * @desc Authenticate a user
+ * @access Public
+ */
+router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+
+    authenticateUser(username, password, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!result) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        res.json(result);
+    });
+});
 /**
  * @route GET /api/todos
  * @desc Get all todos
  * @access Public
  */
 router.get('/todos', (req, res) => {
-    db.all('SELECT * FROM todos ORDER BY created_at ASC', [], (err, rows) => {
+    getAllTodos((err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -49,15 +87,11 @@ router.get('/todos', (req, res) => {
  */
 router.post('/todos', (req, res) => {
     const { task } = req.body;
-    const id = uuidv4(); // Generate a unique UUID
-    const completed = false;
-    const createdAt = new Date().toISOString(); // Get current time in ISO format including milliseconds
-    console.log("id:" + id + "\nbody:" + task + "\ncompleted:" + completed);
-    db.run('INSERT INTO todos (id, task, completed, created_at) VALUES (?, ?, ?, ?)', [id, task, completed, createdAt], function (err) {
+    createTodo(task, (err, result) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id });
+        res.status(201).json(result);
     });
 });
 
@@ -70,11 +104,11 @@ router.put('/todos/:id', (req, res) => {
     const { id } = req.params;
     const { task, completed } = req.body;
 
-    db.run('UPDATE todos SET task = ?, completed = ? WHERE id = ?', [task, completed, id], function (err) {
+    updateTodoById(id, task, completed, (err, changes) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        if (this.changes === 0) {
+        if (changes === 0) {
             return res.status(404).json({ message: 'Todo not found' });
         }
         res.json({ id, task, completed });
@@ -89,11 +123,11 @@ router.put('/todos/:id', (req, res) => {
 router.delete('/todos/:id', (req, res) => {
     const { id } = req.params;
 
-    db.run('DELETE FROM todos WHERE id = ?', [id], function (err) {
+    deleteTodoById(id, (err, changes) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        if (this.changes === 0) {
+        if (changes === 0) {
             return res.status(404).json({ message: 'Todo not found' });
         }
         res.status(204).end();
