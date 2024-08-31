@@ -52,37 +52,51 @@ function authenticateUser(username, password, callback) {
 //function to get all todos by userId
 function getAllTodos(userId, callback) {
     // Query to select todos for the specific user
-    const query = 'SELECT * FROM todos WHERE user_id = ? ORDER BY created_at ASC';
+    const query = 'SELECT id, task, completed, created_at FROM todos WHERE user_id = ? ORDER BY created_at ASC';
 
     db.all(query, [userId], (err, rows) => {
         callback(err, rows);
     });
 }
-
+//TODO update createTodo, updateTodoById, deleteTodoById to use new db schema
 // Function to create a new to do
-function createTodo(task, callback) {
+function createTodo(userId, task, callback) {
     const id = uuidv4();
     const completed = false;
     const createdAt = new Date().toISOString();
 
-    db.run('INSERT INTO todos (id, task, completed, created_at) VALUES (?, ?, ?, ?)', [id, task, completed, createdAt], function (err) {
-        callback(err, { id });
+    db.run('INSERT INTO todos (id, task, completed, created_at, user_id) VALUES (?, ?, ?, ?, ?)', [id, task, completed, createdAt, userId], function (err) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, { id });
+        }
     });
 }
 
 // Function to update a to do by id
-function updateTodoById(id, task, completed, callback) {
-    db.run('UPDATE todos SET task = ?, completed = ? WHERE id = ?', [task, completed, id], function (err) {
-        callback(err, this.changes);
+function updateTodoById(userId, id, task, completed, callback) {
+    db.run('UPDATE todos SET task = ?, completed = ? WHERE id = ? AND user_id = ?', [task, completed, id, userId], function (err) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, this.changes); // this.changes will be the number of rows affected
+        }
     });
 }
 
+
 // Function to delete a to do by id
-function deleteTodoById(id, callback) {
-    db.run('DELETE FROM todos WHERE id = ?', [id], function (err) {
-        callback(err, this.changes);
+function deleteTodoById(userId, id, callback) {
+    db.run('DELETE FROM todos WHERE id = ? AND user_id = ?', [id, userId], function (err) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, this.changes); // this.changes will be the number of rows affected
+        }
     });
 }
+
 
 module.exports = {
     getAllTodos,

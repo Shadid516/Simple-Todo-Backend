@@ -7,9 +7,9 @@ const { getAllTodos, createTodo, updateTodoById, deleteTodoById } = require('../
  * @desc Get all todos for the authenticated user
  * @access Protected
  */
-router.get('/todos', (req, res) => {
+router.get('/', (req, res) => {
     // Extract user ID from the authenticated token
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // Pass the user ID to getAllTodos to fetch todos for that user
     getAllTodos(userId, (err, rows) => {
@@ -26,10 +26,15 @@ router.get('/todos', (req, res) => {
  * @desc Create a new to do
  * @access Protected
  */
-router.post('/todos', (req, res) => {
+router.post('/', (req, res) => {
+    const userId = req.user.id; // Get userId from the authenticated user
     const { task } = req.body;
-    console.log(task);
-    createTodo(task, (err, result) => {
+
+    if (!task) {
+        return res.status(400).json({ error: 'Task is required' });
+    }
+
+    createTodo(userId, task, (err, result) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -42,30 +47,33 @@ router.post('/todos', (req, res) => {
  * @desc Update a to do by id
  * @access Protected
  */
-router.put('/todos/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { task, completed } = req.body;
+    const userId = req.user.id; // Extract userId from req.user set by authenticateToken
 
-    updateTodoById(id, task, completed, (err, changes) => {
+    updateTodoById(userId, id, task, completed, (err, changes) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
         if (changes === 0) {
-            return res.status(404).json({ message: 'Todo not found' });
+            return res.status(404).json({ message: 'Todo not found or you are not authorized to update this todo' });
         }
         res.json({ id, task, completed });
     });
 });
+
 
 /**
  * @route DELETE /api/todos/:id
  * @desc Delete a to do by id
  * @access Protected
  */
-router.delete('/todos/:id', (req, res) => {
-    const { id } = req.params;
+router.delete('/:id', (req, res) => {
+    const { id } = req.params; //TODO add userId to func
+    const userId = req.user.id; // Extract userId from req.user set by authenticateToken
 
-    deleteTodoById(id, (err, changes) => {
+    deleteTodoById(userId, id, (err, changes) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
