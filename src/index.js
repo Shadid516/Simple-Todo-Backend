@@ -6,12 +6,15 @@ const todosRouter = require('./routes/todos');
 const userRoutes = require('./routes/users');
 const validateRequest = require('./middleware/requestValidation');
 const morgan = require('morgan'); //morgan is a tool that help express devs follow packet routes
-
+const cors = require('cors'); //allows requests to conect on same machine
 
 
 const PORT = process.env.PORT || 3000; // Use env port or default to 3000
 
 app.use(morgan('dev')); // Logs requests to the console in a concise format
+app.use(cors({
+    origin: 'http://localhost:3000' // Replace with the origin of your frontend
+}));
 app.use(express.json()); // Middleware to parse JSON request bodies
 app.use(validateRequest); // Middleware to ensure request validation
 
