@@ -1,5 +1,7 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const router = express.Router(); // Initialize the router
+const jwtSecret = process.env.JWT_SECRET;
 
 // Import functions from your services file
 const { registerUser, authenticateUser } = require('../services/dbservices');
