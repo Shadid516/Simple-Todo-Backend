@@ -58,7 +58,7 @@ function getAllTodos(userId, callback) {
         callback(err, rows);
     });
 }
-//TODO update createTodo, updateTodoById, deleteTodoById to use new db schema
+
 // Function to create a new to do
 function createTodo(userId, task, callback) {
     const id = uuidv4();
@@ -69,22 +69,28 @@ function createTodo(userId, task, callback) {
         if (err) {
             callback(err, null);
         } else {
-            callback(null, { id });
+            callback(null, { id, task });
         }
     });
 }
 
 // Function to update a to do by id
-function updateTodoById(userId, id, task, completed, callback) {
-    db.run('UPDATE todos SET task = ?, completed = ? WHERE id = ? AND user_id = ?', [task, completed, id, userId], function (err) {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, this.changes); // this.changes will be the number of rows affected
-        }
-    });
-}
+function updateTodoById(userId, id, task, completed = false, callback) {
+    // Ensure completed is a boolean value
+    const completionStatus = typeof completed === 'boolean' ? completed : false;
 
+    db.run(
+        'UPDATE todos SET task = ?, completed = ? WHERE id = ? AND user_id = ?',
+        [task, completionStatus, id, userId],
+        function (err) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, this.changes); // this.changes will be the number of rows affected
+            }
+        }
+    );
+}
 
 // Function to delete a to do by id
 function deleteTodoById(userId, id, callback) {
@@ -96,7 +102,6 @@ function deleteTodoById(userId, id, callback) {
         }
     });
 }
-
 
 module.exports = {
     getAllTodos,
